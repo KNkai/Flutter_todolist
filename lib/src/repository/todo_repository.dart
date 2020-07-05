@@ -1,34 +1,38 @@
 import 'package:todolist_sqflite/src/repository/repository.dart';
 
-class TodoRepository{
+class TodoRepository {
   var repo = Repository();
 
   // ignore: empty_constructor_bodies
-  TodoRepository(){}
+  TodoRepository() {}
 
-  save(table, data)async{
+  save(table, data) async {
     var conn = await repo.database;
     return await conn.insert(table, data);
   }
 
-  getAllTodo(table, int idcate)async{
+  getAllTodo(table, int idcate) async {
     var conn = await repo.database;
     return await conn.query(table, where: 'idcate=?', whereArgs: [idcate]);
   }
 
-  getATodo(table, int id)async{
+  getATodo(table, int id) async {
     var conn = await repo.database;
     return await conn.query(table, where: 'id=?', whereArgs: [id]);
   }
 
-  deleteTodo(table, int id)async{
+  deleteTodoByid(table, int id) async {
     var conn = await repo.database;
     return await conn.delete(table, where: 'id=?', whereArgs: [id]);
   }
 
-  updateTodo(table, data, int id)async{
+  deleteTodoByIdCate(table, int id) async {
+    var conn = await repo.database;
+    return await conn.delete(table, where: 'idcate=?', whereArgs: [id]);
+  }
+
+  updateTodo(table, data, int id) async {
     var conn = await repo.database;
     return await conn.update(table, data, where: 'id=?', whereArgs: [id]);
   }
-
 }

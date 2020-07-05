@@ -24,6 +24,7 @@ class _TodoDetailState extends State<TodoDetail> {
   String _timeRealEditingController;
   int _isDone;
   String dateTimeNow;
+  String _checkDateTimeInput = "";
 
   _getDateTimeNow() {
     dateTimeNow = TimeOfDay.now().hour.toString() +
@@ -46,6 +47,11 @@ class _TodoDetailState extends State<TodoDetail> {
       date = datetime.substring(11).split(':');
       return date[0] + ":" + date[1];
     }
+  }
+
+  _onRefreshPage() {
+    model.clear();
+    _getAllTodoByIdCate(widget.category.id);
   }
 
   var _todoService = TodoService();
@@ -174,6 +180,21 @@ class _TodoDetailState extends State<TodoDetail> {
                 ),
                 actions: <Widget>[
                   Container(
+                    child: Text(
+                      ((_timeFakeEditingController == null &&
+                              _dateFakeEditingController == null))
+                          ? ((_timeFakeEditingController == "time" &&
+                                  _dateFakeEditingController == "date")
+                              ? _checkDateTimeInput
+                              : "")
+                          : _checkDateTimeInput,
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
                     padding: EdgeInsets.only(right: 50, bottom: 30),
                     child: IconButton(
                       icon: Icon(
@@ -182,19 +203,47 @@ class _TodoDetailState extends State<TodoDetail> {
                         color: Colors.green,
                       ),
                       onPressed: () {
-                        setState(() async {
-                          _todo.idCate = widget.category.id;
-                          _todo.dateCreate = dateTimeNow;
-                          _todo.dateFakeDate = (_dateFakeEditingController +
-                              "/" +
-                              _timeFakeEditingController);
-                          _todo.detail = _detailEditingController.text;
-                          _todo.dateRealDate = "*";
-                          _todo.isDone = 0;
-                          // _todoService.saveTodo(_todo);
-                          print(model.length);
-                          Navigator.pop(context);
-                        });
+                        print(1);
+                        print(_timeFakeEditingController);
+                        print(2);
+                        print(_dateFakeEditingController);
+                        print(3);
+                        if (_timeFakeEditingController != null &&
+                            _dateFakeEditingController != null) {
+                          if (_timeFakeEditingController != "time" &&
+                              _dateFakeEditingController != "date") {
+                            setState(() async {
+                              _todo.idCate = widget.category.id;
+                              _todo.dateCreate = dateTimeNow;
+                              _todo.dateFakeDate = _dateFakeEditingController +
+                                  "/" +
+                                  _timeFakeEditingController;
+                              _todo.detail = _detailEditingController.text;
+
+                              _todo.dateRealDate = "*";
+                              _todo.isDone = 0;
+                              _todoService.saveTodo(_todo);
+                              Navigator.pop(context);
+                              _onRefreshPage();
+                              _detailEditingController.clear();
+                              _timeFakeEditingController = "time";
+                              _dateFakeEditingController = "date";
+                            });
+                          } else {
+                            print(5);
+                            setState(() {
+                              _checkDateTimeInput =
+                                  "Input date and time error!";
+                            });
+                            print(_checkDateTimeInput);
+                          }
+                        } else {
+                          print(4);
+                          setState(() {
+                            _checkDateTimeInput = "Input date and time error!";
+                          });
+                          print(_checkDateTimeInput);
+                        }
                       },
                     ),
                   ),
@@ -246,7 +295,28 @@ class _TodoDetailState extends State<TodoDetail> {
                               model[index].dateFakeDate.split('/')[0]),
                           trailing: IconButton(
                             icon: Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {},
+                            onPressed: () {
+                              if (model[index].isDone == 0) {
+                                return showDialog(
+                                    context: context,
+                                    builder: (param) {
+                                      return AlertDialog(
+                                        content: Container(
+                                          width: 300,
+                                          height: 100,
+                                          child: Center(
+                                            child: Text(
+                                                "job isn't finish!\nCannot delete it! \njust do it!"),
+                                          ),
+                                        ),
+                                      );
+                                    });
+                              }
+                              setState(() {
+                                _todoService.deleteTodoById(model[index].id);
+                                _onRefreshPage();
+                              });
+                            },
                           ),
                         ),
                         ListTile(
